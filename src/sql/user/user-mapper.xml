@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	
+	<comment>회원 관련 쿼리문들</comment>
+	<entry key="loginUser">
+		SELECT 
+			    MEMBER_ID,
+			    MEMBER_PWD,
+			    MEMBER_NAME,
+			    MEMBER_FNO,
+			    MEMBER_BNO,
+			    GENDER,
+			    PHONE,
+			    EMAIL,
+			    STATUS,
+			    MEMBER_CODE
+ 		  FROM  
+ 		  		MEMBER
+		 WHERE 
+		 		MEMBER_ID = ?
+  		   AND 
+  		   		MEMBER_PWD = ?
+  		  
+	</entry>
+	<entry key="loginHosp">
+		SELECT
+				HOSP_ID,
+				HOSP_PWD,
+				HOSP_NAME,
+				HOSP_CRN,
+				HOSP_EMAIL,
+				STATUS,
+				HOSP_CODE
+		  FROM 
+		  		HOSPITAL
+		 WHERE	
+		 		HOSP_ID = ?
+		   AND 
+		   		HOSP_PWD = ?
+		  				
+	</entry>
+	
+	<entry key="memberIdCheck">
+		SELECT 
+				COUNT(*)
+		  FROM 
+		    	MEMBER
+		 WHERE 
+		 		MEMBER_ID = ?
+	</entry>
+	
+	<entry key="hospIdCheck">
+		SELECT 
+				COUNT(*)
+		  FROM 
+		    	HOSPITAL
+		 WHERE 
+		 		HOSP_ID = ?
+	</entry>
+	
+	<entry key="idFind">
+		SELECT * FROM (SELECT MEMBER_ID, MEMBER_PWD, MEMBER_NAME, MEMBER_FNO
+					     FROM MEMBER  
+						UNION
+					   SELECT HOSP_ID, HOSP_PWD, HOSP_NAME, TO_CHAR(HOSP_CRN)
+					     FROM HOSPITAL)
+					    WHERE MEMBER_NAME = ?
+					      AND MEMBER_FNO = ?
+		  		
+	</entry>
+	
+	<entry key="pwdFind">
+		SELECT * FROM (SELECT MEMBER_ID, MEMBER_PWD, EMAIL
+					     FROM MEMBER  
+						UNION
+					   SELECT HOSP_ID, HOSP_PWD, HOSP_EMAIL
+					     FROM HOSPITAL)
+					    WHERE MEMBER_ID = ?
+					      AND EMAIL = ?
+		
+	</entry>
+	
+	<entry key="insertMember">
+		INSERT INTO 
+					MEMBER
+					(
+					 MEMBER_ID,
+					 MEMBER_PWD,
+					 MEMBER_NAME,
+					 MEMBER_FNO,
+					 MEMBER_BNO,
+					 GENDER,
+					 PHONE,
+					 EMAIL
+					)
+			 VALUES
+			 		(
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?
+			 		)
+	</entry>
+	
+	<entry key="insertHospital">
+		INSERT INTO 
+					HOSPITAL
+					(
+					 HOSP_ID,
+					 HOSP_PWD,
+					 HOSP_NAME,
+					 HOSP_CRN,
+					 HOSP_EMAIL
+					)
+			 VALUES
+			 		(
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?,
+			 		 ?
+			 		)
+	</entry>
+	
+	<entry key="updateMember">
+		UPDATE 
+		       MEMBER 
+		   SET 
+		       MEMBER_NAME = ?, 
+		       PHONE = ?
+		 WHERE 
+		       MEMBER_ID = ?
+		   AND
+		       MEMBER_PWD = ?      
+	</entry>
+	
+	<entry key="updateMemberPwd">
+		UPDATE
+				MEMBER
+		SET		
+				MEMBER_PWD = ?
+		WHERE	
+				MEMBER_ID = ?		
+	</entry>
+	
+	<entry key="updateHospPwd">
+		UPDATE
+				HOSPITAL
+		SET		
+				HOSP_PWD = ?
+		WHERE	
+				HOSP_ID = ?		
+	</entry>
+	
+	<entry key="deleteMember">
+		DELETE
+		  FROM 
+		 	    MEMBER 
+		 WHERE 
+		        MEMBER_ID = ?				
+	</entry>
+	
+	<entry key="deleteHosp">
+		DELETE
+		  FROM 
+		 	    HOSPITAL 
+		 WHERE 
+		        HOSP_ID = ? 				
+	</entry>
+	
+	<!-- 승희 문의관련 sql -->
+	<entry key="insertInquiry">
+		INSERT INTO 
+					INQUIRY
+					(
+					INQUIRY_NO, 
+					CATEGORY_NO, 
+					USER_ID, 
+					INQUIRY_TITLE, 
+					INQUIRY_CONTENT
+					)
+			VALUES
+					(
+					SEQ_INO.NEXTVAL, 
+					?, ?, ?, ?)
+	</entry>
+	
+	<entry key="selectListCount">
+		SELECT COUNT(*) COUNT
+   		  FROM INQUIRY
+		 WHERE USER_ID = ?
+		   AND STATUS = 'O'
+	</entry>
+	
+	<entry key="selectInquiryList">
+		SELECT * 
+   		  FROM ( SELECT ROWNUM RNUM, A.*
+                   FROM(SELECT INQUIRY_NO, CATEGORY_NAME, USER_ID, INQUIRY_TITLE ,INQUIRY_CONTENT, CREATE_DATE
+                          FROM INQUIRY I
+                          JOIN CATEGORY USING(CATEGORY_NO)
+                         WHERE I.STATUS='O'
+                           AND USER_ID = ?
+                         ORDER BY CREATE_DATE DESC) A)
+ 		 WHERE RNUM BETWEEN ? AND ?
+	
+	</entry>
+	 
+   <entry key="deleteInquiry">
+   		UPDATE INQUIRY
+   		SET STATUS='X'
+   		WHERE INQUIRY_NO = ?
+   
+   </entry>
+   
+   <entry key="selectCategoryList">
+      SELECT CATEGORY_NO, CATEGORY_NAME
+      FROM CATEGORY
+      WHERE CATEGORY_NO != 50
+      AND CATEGORY_NO != 60
+   </entry>
+   
+    
+   <entry key="updateInquiry">
+	  UPDATE INQUIRY
+    	 SET CATEGORY_NO = ?,
+             INQUIRY_TITLE = ?,
+             INQUIRY_CONTENT = ?
+       WHERE 
+       		 INQUIRY_NO = ?
+   </entry>
+  
+   <entry key="selectInquiry">
+		SELECT 
+			   INQUIRY_NO,
+			   CATEGORY_NAME, 
+			   USER_ID,
+			   INQUIRY_TITLE, 
+			   CREATE_DATE,
+			   INQUIRY_CONTENT
+		  FROM 
+		  	   INQUIRY 
+		  JOIN 
+		  	   CATEGORY USING(CATEGORY_NO)
+		 WHERE 
+		 	   INQUIRY_NO = ?
+		   AND 
+		   	   STATUS='O'
+	</entry>
+   
+	
+</properties>

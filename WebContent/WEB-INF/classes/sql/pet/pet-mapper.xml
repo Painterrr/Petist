@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	
+	<comment>회원 관련 쿼리문들</comment>
+	<entry key="insert1Pet">
+		INSERT INTO ANIMAL
+			(PET_NO, 
+			 PET_NAME, 
+			 PET_INPUTNO,
+			 PET_KIND, 
+			 PET_BREED, 
+			 PET_BIRTH, 
+			 PET_NEUTRAL,
+			 PET_OWNER)
+		VALUES
+			(SEQ_ANO.NEXTVAL, 
+			 ?, 
+			 ?, 
+			 ?, 
+			 ?,
+			 TO_DATE(?,'YYYY-MM-DD'), 
+			 ?,
+			 ?)
+	</entry>
+	<entry key="insert2Pet">
+		INSERT INTO ATTACHMENT
+			(FILE_NO, 
+			 REF_CNO, 
+			 ORIGIN_NAME, 
+			 CHANGE_NAME, 
+			 FILE_PATH, 
+			 FILE_LEVEL)
+		VALUES
+			(SEQ_FNO.NEXTVAL, 
+			 SEQ_ANO.CURRVAL, 
+			 ?, 
+			 ?, 
+			 ?, 
+			 ?)
+	</entry>
+	<entry key="selectPetList">
+		SELECT PET_OWNER, PET_NO, FILE_PATH||CHANGE_NAME TITLEIMG, PET_NAME, PET_BIRTH, PET_BREED
+		  FROM ANIMAL A
+		  JOIN ATTACHMENT ON(PET_NO = REF_CNO)
+		 WHERE A.STATUS = 'Y'
+		   AND PET_OWNER = ?
+		   AND FILE_LEVEL = 1
+	</entry>
+	<entry key="deletePet">
+		DELETE FROM (SELECT PET_NAME, MEMBER_PWD, A.STATUS, PET_OWNER
+				FROM ANIMAL A
+				JOIN MEMBER M ON (PET_OWNER = MEMBER_ID)) 
+		 WHERE PET_NAME = ?
+		   AND MEMBER_PWD = ?
+		   and PET_OWNER =?
+	</entry>
+	
+
+	<entry key="selectAnimal">
+		SELECT *
+		FROM ANIMAL
+		WHERE PET_NO = ?
+		  AND STATUS = 'Y'
+	</entry>
+	<entry key="selectDate">
+		SELECT *
+		FROM DIARY
+		WHERE WRITE_DATE = ?
+		  AND PET_NO = ?
+		  AND STATUS = 'Y'
+	</entry>
+	<entry key="insertDiary">
+		INSERT INTO DIARY
+			(DIARY_NO,
+			PET_WEIGHT,
+			PET_WALK,
+			PET_FOOD,
+			PET_PEE,
+			PET_RECORD,
+			WRITE_DATE,
+			STATUS,
+			PET_NO
+			)
+		VALUES
+			(SEQ_DNO.NEXTVAL, 
+			 ?,
+			 ?, 
+			 ?, 
+			 ?, 
+			 ?,
+			 ?,
+			 'Y',
+			 ?)
+	</entry>
+	<entry key="selectDiary">
+		SELECT *
+		FROM DIARY D
+		JOIN ANIMAL A ON (D.PET_NO = A.PET_NO)
+        WHERE D.STATUS = 'Y'
+        AND DIARY_NO = ?
+	</entry>
+	<entry key="updateDiary">
+		UPDATE 
+			   DIARY
+		   SET
+		       PET_WEIGHT = ?,
+		       PET_WALK = ?,
+		       PET_FOOD = ?,
+		       PET_PEE = ?,
+		       PET_RECORD = ?
+		 WHERE
+		       DIARY_NO = ?
+		   AND
+		       STATUS = 'Y'
+	</entry>
+	<entry key="deleteDiary">
+		DELETE FROM DIARY
+		 WHERE DIARY_NO = ?
+	</entry>
+	<entry key="selectDiaryListCount">
+		SELECT COUNT(*) COUNT
+		  FROM DIARY
+		 WHERE STATUS='Y'
+	</entry>
+	<entry key="selectDiaryList">
+      SELECT * 
+        FROM (SELECT ROWNUM RNUM, A.*
+                FROM (SELECT DIARY_NO, WRITE_DATE, PET_WEIGHT, PET_WALK, PET_FOOD, PET_PEE, PET_RECORD, PET_NO
+                        FROM DIARY 
+                       WHERE STATUS = 'Y'
+                         AND PET_NO = ?
+                       ORDER BY DIARY_NO DESC) A)
+       WHERE RNUM BETWEEN ? AND ?
+   </entry>
+   
+
+</properties>

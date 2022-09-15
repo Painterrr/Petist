@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+   
+   <comment>관리자 페이지 관련 쿼리문들</comment>
+   
+   
+   
+	<!-- 총 문의사항 게시글 수 -->
+    <entry key="selectListCount">
+      SELECT COUNT(*) COUNT
+        FROM INQUIRY
+       WHERE STATUS='O'
+        AND CATEGORY_NO != 10
+    </entry>
+   
+    <!-- 문의사항 게시글 리스트 -->
+    <entry key="InquiryList">
+      SELECT * 
+          FROM ( SELECT ROWNUM RNUM, A.*
+                   FROM(SELECT INQUIRY_NO, CATEGORY_NAME, USER_ID, INQUIRY_TITLE, INQUIRY_CONTENT, CREATE_DATE, CHECKSTATUS
+                          FROM INQUIRY I
+                          JOIN CATEGORY USING(CATEGORY_NO)
+                         WHERE I.STATUS='O'
+                         AND CATEGORY_NO != 10
+                         ORDER BY CREATE_DATE DESC) A)
+        WHERE RNUM BETWEEN ? AND ?
+    </entry>
+   
+    <!-- 총 신고게시글 수 -->
+    <entry key="selectReportListCount">
+	  SELECT COUNT(*) COUNT
+		FROM INQUIRY
+	   WHERE STATUS='O'
+		 AND CATEGORY_NO = 10
+    </entry>
+   
+   
+    <!-- 신고 게시글 리스트 -->
+    <entry key="selectReportList">
+   		SELECT * 
+          FROM ( SELECT ROWNUM RNUM, A.*
+                   FROM(SELECT INQUIRY_NO, CATEGORY_NAME, USER_ID, INQUIRY_TITLE, INQUIRY_CONTENT, CREATE_DATE, CHECKSTATUS
+                          FROM INQUIRY I
+                          JOIN CATEGORY USING(CATEGORY_NO)
+                         WHERE I.STATUS='O'
+                         AND CATEGORY_NO = 10
+                         ORDER BY CREATE_DATE DESC) A)
+        WHERE RNUM BETWEEN ? AND ?
+    </entry>
+   
+    <!-- 아이디로 신고게시글 찾기 -->
+    <entry key="searchIdReport">
+   		SELECT INQUIRY_NO, CATEGORY_NAME, USER_ID, INQUIRY_TITLE ,INQUIRY_CONTENT, CREATE_DATE, CHECKSTATUS
+          FROM INQUIRY I
+          JOIN CATEGORY USING(CATEGORY_NO)
+         WHERE I.STATUS='O'
+           AND CATEGORY_NO = 10
+           AND USER_ID = ?
+    </entry>
+   
+	<!-- 아이디로 문의게시글 찾기 -->
+ 	<entry key="searchIdInquiry">
+   		SELECT INQUIRY_NO, CATEGORY_NAME, USER_ID, INQUIRY_TITLE ,INQUIRY_CONTENT, CREATE_DATE, CHECKSTATUS
+          FROM INQUIRY I
+          JOIN CATEGORY USING(CATEGORY_NO)
+         WHERE I.STATUS='O'
+           AND CATEGORY_NO != 10
+           AND USER_ID = ?
+	</entry>
+   
+	<!-- 총 맴버수 -->
+	<entry key="selectMemberCount">
+	   	 SELECT COUNT(*) COUNT         
+      	   FROM(SELECT MEMBER_ID, MEMBER_NAME, PHONE, EMAIL, STATUS
+                  FROM MEMBER 
+                 WHERE STATUS != 'N'
+                 UNION
+                SELECT HOSP_ID, H.HOSP_NAME, TEL, H.HOSP_EMAIL, H.STATUS
+                  FROM HOSPITAL H
+                  JOIN HOSPITAL_INFO USING(HOSP_ID)
+                 WHERE H.STATUS != 'N')
+	</entry>
+   
+    <!-- 총 맴버리스트 -->
+    <entry key="selectMemberList">
+   		
+	  SELECT * 
+   	  	FROM(SELECT ROWNUM RNUM, A.* 
+               FROM ((SELECT MEMBER_ID, MEMBER_NAME, PHONE, EMAIL, STATUS
+                        FROM MEMBER 
+                       WHERE STATUS != 'N'
+                         AND MEMBER_ID != 'admin'
+                       UNION
+                      SELECT HOSP_ID, HI.HOSP_NAME, TEL, H.HOSP_EMAIL, H.STATUS
+                        FROM HOSPITAL H
+                        JOIN HOSPITAL_INFO HI USING(HOSP_ID)
+                       WHERE H.STATUS != 'N')
+                       ORDER BY STATUS DESC) A)
+		WHERE RNUM BETWEEN ? AND ?
+    </entry>
+   
+	<!-- 아이디로 유저찾기 -->
+	<entry key="searchIdMember">
+		SELECT * 
+		  FROM (SELECT MEMBER_ID, MEMBER_NAME, PHONE, EMAIL, STATUS
+                  FROM MEMBER 
+                 WHERE STATUS != 'N'
+                 UNION
+                SELECT HOSP_ID, H.HOSP_NAME, TEL, H.HOSP_EMAIL, H.STATUS
+                  FROM HOSPITAL H
+                  JOIN HOSPITAL_INFO USING(HOSP_ID)
+                 WHERE H.STATUS != 'N')
+          WHERE MEMBER_ID LIKE ?
+	</entry>
+   
+  	<!-- 일반유저차단 -->
+  	<entry key="blockMember">
+  		UPDATE MEMBER
+		SET STATUS = 'B'
+		WHERE MEMBER_ID = ?
+  	
+  	</entry>
+   
+   	<!-- 병원유저차단 -->
+ 	<entry key="blockHosp">
+ 		UPDATE HOSPITAL
+		SET STATUS = 'B'
+		WHERE HOSP_ID = ?
+ 	</entry>
+   
+	<!-- 일반유저차단해제 -->
+	<entry key="UnBlockMember">
+		UPDATE MEMBER
+		SET STATUS = 'Y'
+		WHERE MEMBER_ID = ?
+	</entry>
+   
+   	<!-- 병원유저차단해제 -->
+   	<entry key="UnBlockHosp">
+   		UPDATE HOSPITAL
+		SET STATUS = 'Y'
+		WHERE HOSP_ID = ?
+   	</entry>
+   
+   	<!-- 문의글 답변확인 -->
+   	<entry key="inquiryOkCheck">
+   	   UPDATE INQUIRY
+       SET CHECKSTATUS='답변완료'
+       WHERE INQUIRY_NO = ?
+   	</entry>
+   
+   	<!-- 문의글 댓글조회 -->
+   	<entry key="selectReplyList">
+   		SELECT REPLY_NO, REPLY_CONTENT, MEMBER_ID, TO_CHAR(CREATE_DATE, 'YY/MM/DD HH:MI') CREATE_DATE 
+        FROM INREPLY R
+        JOIN MEMBER ON(REPLY_WRITER = MEMBER_ID)
+       WHERE R.STATUS ='Y'
+         AND REF_INO = ?
+       ORDER BY CREATE_DATE DESC
+   	</entry>
+   
+   	<!-- 문의글 댓글추가 -->
+   	<entry key="insertReply">
+   		 INSERT INTO INREPLY(REPLY_NO, REPLY_CONTENT, REF_INO, REPLY_WRITER)
+         VALUES(SEQ_IRNO.NEXTVAL, ?, ?, ?)
+   	</entry>
+   
+   	<!-- 문의글 댓글삭제 -->
+   	<entry key="deleteReply">
+   		  DELETE FROM INREPLY
+          WHERE REPLY_NO = ?
+   	</entry>
+   	<!-- 게시글 관리(검색) -->
+   	<entry key="searchBoard">
+		SELECT
+					COMM_NO,
+					COMM_TITLE,
+					COMM_WRITER,
+					COMM_COUNT,
+					CATEGORY_NAME,
+					CREATE_DATE
+		FROM
+					COMMUNITY C
+		JOIN
+					CATEGORY USING(CATEGORY_NO)
+		LEFT JOIN
+					MEMBER ON (COMM_WRITER = MEMBER_ID)
+		WHERE
+					COMM_TITLE LIKE '%'||?||'%'
+		AND
+					C.STATUS = 'Y'
+		ORDER BY
+					CREATE_DATE DESC
+	</entry>
+	
+	<!-- 게시글 선택 삭제 -->
+	
+	<entry key="deleteCheckedBoard">
+	 	UPDATE
+	 			COMMUNITY
+	 	SET
+	 			STATUS = 'N'
+	 	WHERE
+	 			COMM_NO = ?
+	</entry>
+   
+   
+</properties>

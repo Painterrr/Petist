@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	
+	<comment>커뮤니티 게시판 관련 쿼리문들</comment>
+	
+<entry key="selectListCount">
+	SELECT COUNT(*) COUNT
+	FROM COMMUNITY
+	WHERE STATUS = 'Y'
+	AND CATEGORY_NO = ?
+	
+</entry>
+
+
+	
+<entry key="selectList">
+		SELECT * 
+  			FROM ( SELECT ROWNUM RNUM, A.*
+         			FROM (SELECT COMM_NO, CATEGORY_NAME, COMM_TITLE, COMM_WRITER, COMM_COUNT, CREATE_DATE
+           				    FROM COMMUNITY C
+                  			JOIN CATEGORY USING(CATEGORY_NO)
+                 		    WHERE CATEGORY_NO = ?
+                  			AND C.STATUS = 'Y'
+                  	        ORDER BY CREATE_DATE DESC) A)
+   		 WHERE RNUM BETWEEN ? AND ?		
+	</entry>	
+	
+<entry key="increaseCount">
+		UPDATE COMMUNITY
+		   SET COMM_COUNT = COMM_COUNT + 1
+		 WHERE 	COMM_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="selectCommunity">
+		SELECT COMM_NO, CATEGORY_NAME, COMM_TITLE, COMM_CONTENT, COMM_WRITER, CREATE_DATE
+		  FROM COMMUNITY C
+		  LEFT JOIN CATEGORY USING(CATEGORY_NO)
+		 WHERE COMM_NO = ?
+		   AND C.STATUS = 'Y'
+	</entry>
+	
+	<entry key="selectCoAttachment">
+		SELECT FILE_NO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH
+		  FROM COATTACHMENT
+		 WHERE REF_CONO = ?
+	</entry>
+	
+	<entry key="selectCategoryList">
+		SELECT CATEGORY_NO, CATEGORY_NAME
+		  FROM CATEGORY
+	
+	</entry>
+	
+	
+	<entry key="insertCommunity">
+		INSERT INTO COMMUNITY(COMM_NO, COMM_TITLE, COMM_CONTENT, COMM_WRITER, CATEGORY_NO)
+		VALUES(SEQ_CNO.NEXTVAL, ?, ?, ?, ?)
+	</entry>
+	
+	<entry key="insertCoAttachment">
+		INSERT INTO COATTACHMENT (FILE_NO, REF_CONO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH)
+		VALUES(SEQ_FNO.NEXTVAL, SEQ_CNO.CURRVAL, ?, ?, ? )
+	</entry>
+	
+	
+	<entry key="updateCommunity">
+		UPDATE COMMUNITY
+		   SET CATEGORY_NO = ?,
+		       COMM_TITLE = ?,
+		       COMM_CONTENT = ?
+		 WHERE COMM_NO = ?
+	</entry>
+	
+	<entry key="updateCoAttachment">
+		UPDATE COATTACHMENT
+		   SET ORIGIN_NAME = ?,
+		       CHANGE_NAME = ?,
+		       FILE_PATH = ?,
+		       UPLOAD_DATE = SYSDATE
+		 WHERE FILE_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	
+	<entry key="insertNewCoAttachment">
+		INSERT INTO COATTACHMENT (FILE_NO, REF_CONO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH)
+		VALUES (SEQ_FNO.NEXTVAL, ?, ?, ?, ?)
+	</entry>
+	
+	
+	<entry key="deleteCommunity">
+		UPDATE COMMUNITY
+		   SET STATUS = 'N'
+		 WHERE COMM_NO = ?
+	</entry>
+	
+	<entry key = "selectReplyList">
+	
+		SELECT REPLY_NO, REPLY_CONTENT, REPLY_WRITER, CREATE_DATE
+		FROM USERREPLY		
+		WHERE REF_BNO=?
+		AND STATUS='Y'
+		ORDER BY CREATE_DATE DESC
+		
+	</entry>
+	
+	
+
+<entry key = "insertReply">
+
+	INSERT INTO USERREPLY(REPLY_NO, REPLY_CONTENT, REF_BNO, REPLY_WRITER)
+	VALUES(SEQ_CRNO.NEXTVAL, ?, ?, ?)
+	
+</entry>
+	
+	<entry key ="deleteReply">
+	
+	UPDATE USERREPLY
+	SET STATUS = 'N'
+	WHERE REPLY_NO = ?
+	
+	</entry>
+	
+</properties>
+

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	
+	<comment>동물병원 게시판, 동물병원 관리 페이지 관련 쿼리문들</comment>
+	
+	<entry key="selectListCount">
+		SELECT
+				COUNT(*) COUNT
+		  FROM
+		  		HOSPITAL_INFO
+		 WHERE
+		 		STATUS = 'Y'
+		   AND
+		   		ADDRESS LIKE ?
+	</entry>
+	
+	<entry key="selectList">
+		SELECT *
+		  FROM (SELECT ROWNUM RNUM, A.*
+		          FROM (SELECT I.HOSP_NO
+		                     , HOSP_ID
+		                     , HOSP_NAME
+		                     , ADDRESS
+		                     , ADDRESS_DETAIL
+		                     , Y_COORDINATE
+		                     , X_COORDINATE
+		                     , OPERATING_TIME
+		                     , HOLIDAY
+		                     , PARKING
+		                     , TEL
+		                     , HOMEPAGE
+		                     , INTRODUCE
+		                     , NVL(COUNT, 0) REVIEW_COUNT
+		                     , TITLE_IMG
+		                  FROM HOSPITAL_INFO I
+		                    , (SELECT HOSP_NO, COUNT(*) COUNT
+		                         FROM HOSPITAL_REVIEW
+		                        WHERE STATUS = 'Y'
+		                        GROUP BY HOSP_NO) C
+		                    , (SELECT FILE_PATH||CHANGE_NAME TITLE_IMG, REF_CNO
+		                         FROM ATTACHMENT
+		                        WHERE STATUS = 'Y')
+		                 WHERE I.STATUS = 'Y'
+		                 AND ADDRESS LIKE ?
+		                 AND I.HOSP_NO = C.HOSP_NO(+)
+		                 AND I.HOSP_NO = REF_CNO(+)
+		                 ORDER BY CREATE_DATE DESC) A)
+		 WHERE RNUM BETWEEN ? AND ?
+	</entry>
+	
+	<entry key="selectSearchListCount">
+		SELECT
+				COUNT(*) COUNT
+		  FROM
+		  		HOSPITAL_INFO
+		 WHERE
+		 		STATUS = 'Y'
+		   AND
+		   		ADDRESS LIKE ?
+		   AND
+		   		HOSP_NAME LIKE ?
+	</entry>
+	
+	<entry key="selectSearchList">
+		SELECT *
+		  FROM (SELECT ROWNUM RNUM, A.*
+		          FROM (SELECT I.HOSP_NO
+		                     , HOSP_ID
+		                     , HOSP_NAME
+		                     , ADDRESS
+		                     , ADDRESS_DETAIL
+		                     , Y_COORDINATE
+		                     , X_COORDINATE
+		                     , OPERATING_TIME
+		                     , HOLIDAY
+		                     , PARKING
+		                     , TEL
+		                     , HOMEPAGE
+		                     , INTRODUCE
+		                     , NVL(COUNT, 0) REVIEW_COUNT
+		                     , TITLE_IMG
+		                  FROM HOSPITAL_INFO I
+		                    , (SELECT HOSP_NO, COUNT(*) COUNT
+		                         FROM HOSPITAL_REVIEW
+		                        WHERE STATUS = 'Y'
+		                        GROUP BY HOSP_NO) C
+		                    , (SELECT FILE_PATH||CHANGE_NAME TITLE_IMG, REF_CNO
+		                         FROM ATTACHMENT
+		                        WHERE STATUS = 'Y')
+		                 WHERE I.STATUS = 'Y'
+		                 AND ADDRESS LIKE ?
+		                 AND I.HOSP_NAME LIKE ?
+		                 AND I.HOSP_NO = C.HOSP_NO(+)
+		                 AND I.HOSP_NO = REF_CNO(+)
+		                 ORDER BY CREATE_DATE DESC) A)
+		 WHERE RNUM BETWEEN ? AND ?
+	</entry>
+	
+	<entry key="selectHospital">
+		SELECT I.HOSP_NO
+             , HOSP_ID
+             , HOSP_NAME
+             , ADDRESS
+             , ADDRESS_DETAIL
+             , Y_COORDINATE
+             , X_COORDINATE
+             , OPERATING_TIME
+             , HOLIDAY
+             , PARKING
+             , TEL
+             , HOMEPAGE
+             , INTRODUCE
+             , NVL(COUNT, 0) REVIEW_COUNT
+             , TITLE_IMG
+          FROM HOSPITAL_INFO I
+             , (SELECT HOSP_NO, COUNT(*) COUNT
+                  FROM HOSPITAL_REVIEW
+                 WHERE STATUS = 'Y'
+                 GROUP BY HOSP_NO) C
+             , (SELECT FILE_PATH||CHANGE_NAME TITLE_IMG, REF_CNO
+                  FROM ATTACHMENT
+                 WHERE STATUS = 'Y'
+                   AND FILE_LEVEL = 1) AT
+         WHERE I.STATUS = 'Y'
+           AND I.HOSP_NO = C.HOSP_NO(+)
+           AND I.HOSP_NO = AT.REF_CNO(+)
+		   AND I.HOSP_NO = ?
+	</entry>
+	
+	<entry key="selectHospitalAttachment">
+		SELECT FILE_NO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH
+		  FROM ATTACHMENT
+		 WHERE REF_CNO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="selectReviewListCount">
+		SELECT COUNT(*) COUNT
+		  FROM HOSPITAL_REVIEW
+		 WHERE STATUS = 'Y'
+		   AND HOSP_NO = ?
+	</entry>
+	
+	<entry key="selectReviewList">
+		SELECT *
+		  FROM (SELECT ROWNUM RNUM, A.*
+		          FROM (SELECT REVIEW_NO
+		                     , HOSP_NO
+		                     , USER_ID
+		                     , PET_NO
+		                     , PET_KIND
+		                     , PET_BREED
+		                     , PET_AGE
+		                     , CLINIC_DATE
+		                     , CLINIC_INFO
+		                     , PRICE
+		                     , CONTENT
+		                     , CREATE_DATE
+		                     , STATUS
+		                  FROM HOSPITAL_REVIEW
+		                 WHERE STATUS = 'Y'
+		                 AND HOSP_NO = ?
+		                 ORDER BY CREATE_DATE DESC) A)
+		 WHERE RNUM BETWEEN ? AND ?
+	</entry>
+	
+	<entry key="selectPetInfoList">
+		SELECT PET_NO, PET_NAME, PET_KIND, PET_BREED, FLOOR(CEIL(SYSDATE - PET_BIRTH)/30) PET_AGE
+		  FROM ANIMAL
+		  WHERE STATUS = 'Y'
+		    AND PET_OWNER = ?
+	</entry>
+	
+	<entry key="insertReview">
+		INSERT INTO HOSPITAL_REVIEW(REVIEW_NO, HOSP_NO, USER_ID, PET_NO, PET_KIND, PET_BREED, PET_AGE, CLINIC_DATE, CLINIC_INFO, PRICE, CONTENT)
+		VALUES(SEQ_CNO.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	</entry>
+	
+	<entry key="selectReview">
+		SELECT REVIEW_NO
+		     , HOSP_NO
+		     , USER_ID
+		     , PET_NO
+		     , PET_KIND
+		     , PET_BREED
+		     , PET_AGE
+		     , CLINIC_DATE
+		     , CLINIC_INFO
+		     , PRICE
+		     , CONTENT
+		     , CREATE_DATE
+		     , STATUS
+		  FROM HOSPITAL_REVIEW
+		 WHERE STATUS = 'Y'
+		   AND REVIEW_NO = ?
+	</entry>
+	
+	<entry key="updateReview">
+		UPDATE HOSPITAL_REVIEW
+		   SET PET_NO = ?
+		   	 , PET_KIND = ?
+		   	 , PET_BREED = ?
+		   	 , PET_AGE = ?
+		   	 , CLINIC_DATE = TO_DATE(?, 'YYYY-MM-DD')
+		   	 , CLINIC_INFO = ?
+		   	 , PRICE = ?
+		   	 , CONTENT = ?
+		 WHERE REVIEW_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="selectAttachment">
+		SELECT FILE_NO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH
+		  FROM ATTACHMENT
+		 WHERE REF_CNO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="deleteReview">
+		UPDATE HOSPITAL_REVIEW
+		   SET STATUS = 'N'
+		 WHERE REVIEW_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="selectHospitalById">
+		SELECT I.HOSP_NO
+             , HOSP_ID
+             , HOSP_NAME
+             , ADDRESS
+             , ADDRESS_DETAIL
+             , Y_COORDINATE
+             , X_COORDINATE
+             , OPERATING_TIME
+             , HOLIDAY
+             , PARKING
+             , TEL
+             , HOMEPAGE
+             , INTRODUCE
+             , NVL(COUNT, 0) REVIEW_COUNT
+             , TITLE_IMG
+          FROM HOSPITAL_INFO I
+             , (SELECT HOSP_NO, COUNT(*) COUNT
+                  FROM HOSPITAL_REVIEW
+                 WHERE STATUS = 'Y'
+                 GROUP BY HOSP_NO) C
+             , (SELECT FILE_PATH||CHANGE_NAME TITLE_IMG, REF_CNO
+                  FROM ATTACHMENT
+                 WHERE STATUS = 'Y'
+                   AND FILE_LEVEL = 1) AT
+         WHERE I.STATUS = 'Y'
+           AND I.HOSP_NO = C.HOSP_NO(+)
+           AND I.HOSP_NO = AT.REF_CNO(+)
+		   AND I.HOSP_ID = ?
+	</entry>
+	
+	<entry key="updateHospital">
+		UPDATE HOSPITAL_INFO
+		   SET HOSP_NAME = ?
+		     , ADDRESS = ?
+		     , ADDRESS_DETAIL = ?
+		     , Y_COORDINATE = ?
+		     , X_COORDINATE = ?
+		     , OPERATING_TIME = ?
+		     , HOLIDAY = ?
+		     , PARKING = ?
+		     , TEL = ?
+		     , HOMEPAGE = ?
+		     , INTRODUCE = ?
+		 WHERE HOSP_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="updateHospitalAttachment">
+		UPDATE ATTACHMENT
+		   SET ORIGIN_NAME = ?
+		     , CHANGE_NAME = ?
+		     , FILE_PATH = ?
+		     , UPLOAD_DATE = SYSDATE
+		 WHERE FILE_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="insertNewHospitalAttachment">
+		INSERT INTO ATTACHMENT(FILE_NO, REF_CNO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH)
+		VALUES(SEQ_FNO.NEXTVAL, ?, ?, ?, ?)
+	</entry>
+	
+	<entry key="deleteHospital">
+		UPDATE HOSPITAL_INFO
+		   SET STATUS = 'N'
+		 WHERE HOSP_NO = ?
+		   AND STATUS = 'Y'
+	</entry>
+	
+	<entry key="insertHospital">
+		INSERT INTO HOSPITAL_INFO(HOSP_NO, HOSP_ID, HOSP_NAME, ADDRESS, ADDRESS_DETAIL
+								, Y_COORDINATE, X_COORDINATE, OPERATING_TIME, HOLIDAY, PARKING
+								, TEL, HOMEPAGE, INTRODUCE)
+		VALUES(SEQ_CNO.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	</entry>
+	
+	<entry key="insertAttachment">
+		INSERT INTO ATTACHMENT(FILE_NO, REF_CNO, ORIGIN_NAME, CHANGE_NAME, FILE_PATH)
+		VALUES(SEQ_FNO.NEXTVAL, ?, ?, ?, ?)
+	</entry>
+	
+</properties>
